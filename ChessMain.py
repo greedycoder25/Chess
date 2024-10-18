@@ -1,6 +1,15 @@
 import pygame as p
 import ChessEngine,SmartMoveFinder
 
+# Initialize the pygame mixer for sound
+p.mixer.init()
+
+# Load the sound files
+move_sound = p.mixer.Sound('sounds/piece_movement.mp3')
+capture_sound = p.mixer.Sound('sounds/capture.mp3')
+check_sound = p.mixer.Sound('sounds/move-check.mp3')
+checkmate_sound = p.mixer.Sound('sounds/checkmate.mp3')
+
 BOARD_WIDTH, BOARD_HEIGHT = 512, 512
 MOVE_LOG_PANEL_WIDTH = 250
 MOVE_LOG_PANEL_HEIGHT = BOARD_HEIGHT
@@ -31,7 +40,8 @@ def main():
     sqSelected = () #keep track of last click
     playerClicks = [] #keep track of player clicks
     gameOver = False
-    playerOne = False #True if Human playing white
+    sound_played = False
+    playerOne = True #True if Human playing white
     playerTwo = True
     while running:
         humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
@@ -97,7 +107,13 @@ def main():
             moveMade = True
             animate = True
         if moveMade:
-            if animate:
+            if gs.inCheck():  # If the king is in check
+                check_sound.play()  # Play the check sound
+            if move.isCapture:
+                    capture_sound.play()
+            else:
+                move_sound.play()
+            if animate:  
                 animateMove(gs.moveLog[-1], screen, gs.board, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
@@ -107,8 +123,12 @@ def main():
         drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
         if gs.checkMate or gs.staleMate:
             gameOver = True
+            if (gs.checkMate or gs.staleMate) and not sound_played:
+                checkmate_sound.play()
+                sound_played = True
             drawEndGameText(screen, (('Stalemate') if gs.staleMate else 'Black Wins by Checkmate' if gs.whiteToMove else 'White Wins by Checkmate'))
-                
+            
+        
         clock.tick(MAX_FPS)
         p.display.flip()
 
