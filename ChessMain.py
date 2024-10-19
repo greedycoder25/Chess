@@ -1,4 +1,5 @@
 import pygame as p
+import random as r
 import ChessEngine,SmartMoveFinder
 
 # Initialize the pygame mixer for sound
@@ -24,6 +25,45 @@ def load_images():
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load(f"images/{piece}.png"), (SQ_SIZE, SQ_SIZE))
 
+def showPromotionOptions(screen, isWhite):
+    promotionOptions = ['Q', 'R', 'B', 'N']
+    pieceImages = [f"w{piece}" if isWhite else f"b{piece}" for piece in promotionOptions]
+
+    # Create a square window to hold the four promotion options
+    windowSize = 200  
+    optionSize = windowSize // 2  
+    optionRects = []  
+    promotionWindow = p.Surface((windowSize, windowSize))
+    promotionWindow.fill(p.Color('white'))  
+
+    positions = [
+        (0, 0),  # Top-left corner
+        (optionSize, 0),  # Top-right corner
+        (0, optionSize),  # Bottom-left corner
+        (optionSize, optionSize)  # Bottom-right corner
+    ]
+    for i, piece in enumerate(pieceImages):
+        rect = p.Rect(positions[i][0], positions[i][1], optionSize, optionSize)
+        p.draw.rect(promotionWindow, p.Color('black'), rect, 2)  
+        pieceImage = IMAGES[piece]
+        pieceRect = pieceImage.get_rect(center=rect.center)
+        promotionWindow.blit(pieceImage, pieceRect)
+        
+        optionRects.append(rect)
+    screen.blit(promotionWindow, (150, 150))  
+    p.display.flip() 
+
+    # Wait for the player to select a promotion piece
+    selecting = True
+    while selecting:
+        for event in p.event.get():
+            if event.type == p.MOUSEBUTTONDOWN:
+                pos = p.mouse.get_pos()
+                for i, rect in enumerate(optionRects):
+                    if rect.collidepoint(pos[0] - 150, pos[1] - 150): 
+                        return promotionOptions[i] 
+
+
 # Initialize the game
 def main():
     p.init()
@@ -42,7 +82,7 @@ def main():
     gameOver = False
     sound_played = False
     playerOne = True #True if Human playing white
-    playerTwo = True
+    playerTwo = True #True if Human playing black
     while running:
         humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
@@ -107,12 +147,25 @@ def main():
             moveMade = True
             animate = True
         if moveMade:
+            try:
+                if move.isPawnPromotion:
+                    promotionPiece = showPromotionOptions(screen, not gs.whiteToMove)
+                    gs.board[move.endRow][move.endCol] = move.pieceMoved[0] + promotionPiece  # Replace pawn with selected piece
+                elif AIMove.isPawnPromotion:
+                    gs.board[move.endRow][move.endCol] = move.pieceMoved[0] + r.choice(['Q', 'R', 'B', 'N'])  # Replace pawn with selected piece
+            except:
+                pass
+
             if gs.inCheck():  # If the king is in check
                 check_sound.play()  # Play the check sound
-            if move.isCapture:
+            try:
+                if move.isCapture:
                     capture_sound.play()
-            else:
-                move_sound.play()
+                else:
+                    move_sound.play()
+            except:
+                pass
+            
             if animate:  
                 animateMove(gs.moveLog[-1], screen, gs.board, clock)
             validMoves = gs.getValidMoves()
@@ -121,12 +174,18 @@ def main():
 
 
         drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
-        if gs.checkMate or gs.staleMate:
+        if gs.checkMate or gs.staleMate or gs.insufficientMaterial():
             gameOver = True
-            if (gs.checkMate or gs.staleMate) and not sound_played:
+            if gameOver and not sound_played:
                 checkmate_sound.play()
                 sound_played = True
-            drawEndGameText(screen, (('Stalemate') if gs.staleMate else 'Black Wins by Checkmate' if gs.whiteToMove else 'White Wins by Checkmate'))
+            if gs.checkMate:
+                drawEndGameText(screen, 'Black Wins by Checkmate' if gs.whiteToMove else 'White Wins by Checkmate')
+            elif gs.staleMate:
+                drawEndGameText(screen, 'Stalemate')
+            elif gs.insufficientMaterial():
+                drawEndGameText(screen, 'Stalemate: Insufficient Material')  
+
             
         
         clock.tick(MAX_FPS)
@@ -210,7 +269,7 @@ def animateMove(move, screen, board, clock):
     global colors
     dR = move.endRow - move.startRow
     dC = move.endCol - move.startCol
-    framesPerSquare = 5 #fps
+    framesPerSquare = 7 #fps
     frameCount = (abs(dR)+ abs(dC))*framesPerSquare
     for frame in range(frameCount + 1):
         r,c = (move.startRow + dR*frame/frameCount, move.startCol + dC*frame/frameCount)
