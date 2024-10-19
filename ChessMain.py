@@ -301,18 +301,28 @@ def drawPieces(screen, board):
 #Highlight square selected and moves for selected piece
 def highlightSquares(screen, gs, validMoves, sqSelected):
     if sqSelected !=():
-        r,c = sqSelected
+        r, c = sqSelected
         if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
-            #Highlight square selected
+            # Highlight square selected
             s = p.Surface((SQ_SIZE, SQ_SIZE))
-            s.set_alpha(100) #Transperancy value -> 0 transparent; 255-> opaque
+            s.set_alpha(100) # Transparency value -> 0 transparent; 255 opaque
             s.fill(p.Color("blue"))
-            screen.blit(s,(c*SQ_SIZE, r*SQ_SIZE))
-            #highlight moves from that square
+            screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
+            
+            # Highlight moves from that square
             s.fill(p.Color("yellow"))
             for move in validMoves:
                 if move.startRow == r and move.startCol == c:
-                    screen.blit(s, (move.endCol*SQ_SIZE, move.endRow*SQ_SIZE))
+                    screen.blit(s, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
+
+    # Highlight last move
+    if gs.moveLog:
+        lastMove = gs.moveLog[-1]
+        s = p.Surface((SQ_SIZE, SQ_SIZE))
+        s.set_alpha(100)
+        s.fill(p.Color("green"))  # Color for last move
+        screen.blit(s, (lastMove.startCol * SQ_SIZE, lastMove.startRow * SQ_SIZE))
+        screen.blit(s, (lastMove.endCol * SQ_SIZE, lastMove.endRow * SQ_SIZE))
 
 def kingInCheck(screen,gs):
     if gs.inCheck():
