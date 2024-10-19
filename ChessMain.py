@@ -18,6 +18,8 @@ DIMENSION = 8  # Chess board is 8x8
 SQ_SIZE = BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
+DIFFICULTY = 2
+turn = 0
 
 # Load images
 def load_images():
@@ -62,11 +64,82 @@ def showPromotionOptions(screen, isWhite):
                 for i, rect in enumerate(optionRects):
                     if rect.collidepoint(pos[0] - 150, pos[1] - 150): 
                         return promotionOptions[i] 
+def difficulty():
+    global DIFFICULTY
+    screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    font = p.font.SysFont("Arial", 32, True, False)
+    screen.fill(p.Color("Brown"))
+    level = font.render("Select difficulty:", True, p.Color('white'))
+    easy = font.render("Press 1 for Easy", True, p.Color('white'))
+    Hard = font.render("Press 2 for Hard", True, p.Color('white'))
+    run = True
+    screen.blit(level, (150, 100))
+    screen.blit(easy, (150, 150))
+    screen.blit(Hard, (150, 200))
+    p.display.flip()
+    while run:
+        for event in p.event.get():
+            if event.type == p.KEYDOWN:
+                if event.key == p.K_1:
+                    DIFFICULTY = 1
+                    run = False
+                elif event.key == p.K_2:
+                    DIFFICULTY  = 2
+                    run = False
+                    
+def TURN():
+    global turn
+    screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    font = p.font.SysFont("Arial", 32, True, False)
+    screen.fill(p.Color("Brown"))
+    black = font.render("Press 2 to play as black", True, p.Color('white'))
+    white = font.render("Press 1 to play as white", True, p.Color('white'))
+    run = True
+    screen.blit(white, (150, 150))
+    screen.blit(black, (150, 200))
+    p.display.flip()
+    while run:
+        for event in p.event.get():
+            if event.type == p.KEYDOWN:
+                if event.key == p.K_1:
+                    turn = 0
+                    run = False
+                elif event.key == p.K_2:
+                    turn  = 1
+                    run = False
+
+
+def startMenu():
+    screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    font = p.font.SysFont("Arial", 32, True, False)
+    screen.fill(p.Color("Brown"))
+
+    player_vs_player = font.render("1. Two Players", True, p.Color('white'))
+    player_vs_computer = font.render("2. Player vs Computer", True, p.Color('white'))
+    screen.blit(player_vs_player, (150, 150))
+    screen.blit(player_vs_computer, (150, 200))
+
+    p.display.flip()
+
+    mode = None
+    while mode is None:
+        for event in p.event.get():
+            if event.type == p.KEYDOWN:
+                if event.key == p.K_1:
+                    mode = "2P"
+                elif event.key == p.K_2:
+                    mode = "AI"
+                
+    return mode
 
 
 # Initialize the game
 def main():
     p.init()
+    mode = startMenu() 
+    if mode != "2P":
+        difficulty()
+        TURN()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
@@ -81,8 +154,16 @@ def main():
     playerClicks = [] #keep track of player clicks
     gameOver = False
     sound_played = False
-    playerOne = True #True if Human playing white
-    playerTwo = True #True if Human playing black
+    if mode == "2P":
+        playerOne = True
+        playerTwo = True
+    elif mode == "AI":
+        if turn == 0:
+            playerOne = True
+            playerTwo = False
+        else:
+            playerOne = False
+            playerTwo = True
     while running:
         humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
@@ -269,7 +350,7 @@ def animateMove(move, screen, board, clock):
     global colors
     dR = move.endRow - move.startRow
     dC = move.endCol - move.startCol
-    framesPerSquare = 7 #fps
+    framesPerSquare = 5 #fps
     frameCount = (abs(dR)+ abs(dC))*framesPerSquare
     for frame in range(frameCount + 1):
         r,c = (move.startRow + dR*frame/frameCount, move.startCol + dC*frame/frameCount)
