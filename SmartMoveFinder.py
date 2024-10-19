@@ -9,17 +9,17 @@ def findRandomMoves(validMoves):
     return validMoves[random.randint(0,len(validMoves)-1)]
 
 
-def findBestMove(gs, validMoves):
+def findBestMove(gs,d, validMoves):
     global nextMove,counter
     nextMove = None
     random.shuffle(validMoves)
     counter =0
-    findMoveNegaMax(gs, validMoves, DEPTH, 1 if gs.whiteToMove else -1)
+    findMoveNegaMax(gs, validMoves, d,d, 1 if gs.whiteToMove else -1)
     print(counter)
     return nextMove
 
 
-def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
+def findMoveNegaMax(gs, validMoves, depth,d, turnMultiplier):
     global nextMove,counter
     counter +=1
     if depth  == 0:
@@ -29,10 +29,10 @@ def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
     for move in validMoves:
         gs.makeMove(move)
         nextMoves = gs.getValidMoves()
-        score = -findMoveNegaMax(gs,nextMoves, depth - 1, -turnMultiplier )
+        score = -findMoveNegaMax(gs,nextMoves, depth - 1,d, -turnMultiplier )
         if score > maxScore:
             maxScore = score
-            if depth == DEPTH:
+            if depth == d:
                 nextMove = move
 
         gs.undoMove()
