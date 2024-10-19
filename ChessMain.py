@@ -68,7 +68,7 @@ def difficulty():
     global DIFFICULTY
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     font = p.font.SysFont("Arial", 32, True, False)
-    screen.fill(p.Color("Brown"))
+    screen.fill(p.Color("green"))
     level = font.render("Select difficulty:", True, p.Color('white'))
     easy = font.render("Press 1 for Easy", True, p.Color('white'))
     Hard = font.render("Press 2 for Hard", True, p.Color('white'))
@@ -91,7 +91,7 @@ def TURN():
     global turn
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     font = p.font.SysFont("Arial", 32, True, False)
-    screen.fill(p.Color("Brown"))
+    screen.fill(p.Color("green"))
     black = font.render("Press 2 to play as black", True, p.Color('white'))
     white = font.render("Press 1 to play as white", True, p.Color('white'))
     run = True
@@ -112,7 +112,7 @@ def TURN():
 def startMenu():
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     font = p.font.SysFont("Arial", 32, True, False)
-    screen.fill(p.Color("Brown"))
+    screen.fill(p.Color("green"))
     welcome = font.render("Welcome to ChessCraft", True, p.Color('white'))
     player_vs_player = font.render("1. Two Players", True, p.Color('white'))
     player_vs_computer = font.render("2. Player vs Computer", True, p.Color('white'))
