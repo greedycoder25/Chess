@@ -1,7 +1,6 @@
 import pygame as p
 class GameState:
     def __init__(self):
-        # Initialize a default chess board
         self.board = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
@@ -298,6 +297,49 @@ class GameState:
         if self.board[r][c - 1] == '--' and self.board[r][c - 2] == '--' and self.board[r][c - 3] == '--':
             if not self.squareUnderAttack(r, c - 1) and not self.squareUnderAttack(r, c - 2):
                 moves.append(Move((r, c), (r, c - 2), self.board, isCastleMove=True))
+    
+    def insufficientMaterial(self):
+        pieces = []
+        bishopsColors = set()
+    
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                piece = self.board[r][c]
+                if piece != '--':
+                    pieces.append((piece, r, c))
+    
+        if len(pieces) > 3:
+            return False
+    
+        if len(pieces) == 2:
+            return True
+        
+        if len(pieces) == 3:
+            for piece, row, col in pieces:
+                if piece[1] == 'B':  # If it's a bishop, track its square color
+                    bishopsColors.add(self.getSquareColor(row, col))
+                elif piece[1] != 'K' and piece[1] != 'N':  # If it's neither a King nor a Knight, it's a draw
+                    return False
+            # If only one Bishop (any color) or one Knight, it's a draw
+            return True
+    
+        # Check for King + Bishop vs King + Bishop, where both bishops are on the same color
+        if len(pieces) == 4:
+            sameColorBishops = True
+            for piece, row, col in pieces:
+                if piece[1] == 'B':
+                    bishopsColors.add(self.getSquareColor(row, col))
+            if len(bishopsColors) == 1:  # Both bishops are on the same color
+                return True
+    
+        return False
+
+    def getSquareColor(self, row, col):
+        """Return the color of the square at (row, col). 
+           0 for dark squares, 1 for light squares."""
+        return (row + col) % 2  # 0 means dark, 1 means light
+
+
 
 
 class CastleRights:
