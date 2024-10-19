@@ -222,7 +222,7 @@ def main():
 
         #AI move Finder
         if not gameOver and not humanTurn:
-            AIMove = SmartMoveFinder.findBestMove(gs, validMoves)
+            AIMove = SmartMoveFinder.findBestMove(gs,DIFFICULTY, validMoves)
             if AIMove is None:
                 AIMove = SmartMoveFinder.findRandomMoves(validMoves)
             gs.makeMove(AIMove)
