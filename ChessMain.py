@@ -113,9 +113,10 @@ def startMenu():
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     font = p.font.SysFont("Arial", 32, True, False)
     screen.fill(p.Color("Brown"))
-
+    welcome = font.render("Welcome to ChessCraft", True, p.Color('white'))
     player_vs_player = font.render("1. Two Players", True, p.Color('white'))
     player_vs_computer = font.render("2. Player vs Computer", True, p.Color('white'))
+    screen.blit(welcome, (150, 100))
     screen.blit(player_vs_player, (150, 150))
     screen.blit(player_vs_computer, (150, 200))
 
